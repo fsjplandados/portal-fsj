@@ -6,27 +6,20 @@ import dj_database_url  # Biblioteca para conectar ao Neon/Postgres
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- SEGURANÇA ---
-# Em produção, busca a chave do ambiente. No local, usa uma insegura de teste.
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-chave-local-desenvolvimento')
-
-# Em produção (Render), DEBUG será False (0). Localmente será True.
 DEBUG = int(os.environ.get('DEBUG', 1))
-
-# Domínios permitidos (Render + Localhost)
-# O '*' libera para todos, útil para evitar erros de "DisallowedHost" iniciais
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(' ')
 
 
 # --- APLICAÇÕES ---
 INSTALLED_APPS = [
-    # Mantenha os apps padrões do Django no topo
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     
-    # O 'staticfiles' deve vir ANTES do Cloudinary neste caso
+    # O 'staticfiles' deve vir ANTES do Cloudinary
     'django.contrib.staticfiles',
     
     # Apps de Terceiros (Cloudinary)
@@ -36,12 +29,10 @@ INSTALLED_APPS = [
     # Seus Apps
     'dashboards',
 ]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    
-    # WhiteNoise: Essencial para arquivos estáticos no Render
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    
+    'whitenoise.middleware.WhiteNoiseMiddleware', # WhiteNoise aqui
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -55,7 +46,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [], # O Django busca automaticamente nas pastas 'templates' dos apps
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,9 +62,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-# --- BANCO DE DADOS (Híbrido) ---
-# Se houver a variável DATABASE_URL (Render/Neon), usa PostgreSQL.
-# Se não (seu PC), usa o arquivo db.sqlite3 local.
+# --- BANCO DE DADOS ---
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
@@ -105,25 +94,24 @@ USE_I18N = True
 USE_TZ = True
 
 
-# --- ARQUIVOS ESTÁTICOS (CSS, JS, Imagens) ---
+# --- ARQUIVOS ESTÁTICOS E MÍDIA (A Correção Importante) ---
 STATIC_URL = 'static/'
-
-# Onde estão seus estáticos locais (ex: a logo)
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# Onde o Django vai juntar tudo no deploy (pasta staticfiles)
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Engine do WhiteNoise para comprimir e servir arquivos
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
-# --- ARQUIVOS DE MÍDIA (Uploads de capas dos dashboards) ---
 MEDIA_URL = '/media/'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+# Configuração Nova (STORAGES) para Django 6
+# Isso garante que o Cloudinary seja usado para uploads e o WhiteNoise para CSS
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# Credenciais do Cloudinary
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
@@ -132,9 +120,8 @@ CLOUDINARY_STORAGE = {
 
 
 # --- LOGIN / LOGOUT ---
-LOGIN_REDIRECT_URL = '/'          # Vai para a Home após logar
-LOGOUT_REDIRECT_URL = '/accounts/login/'  # Volta para o Login após sair
-LOGIN_URL = '/accounts/login/'    # URL da página de login
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/'
 
-# Tipo de campo chave primária padrão
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
