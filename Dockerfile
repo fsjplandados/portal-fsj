@@ -26,4 +26,4 @@ RUN SECRET_KEY=django-insecure-build-key \
     DATABASE_URL=sqlite:///db.sqlite3 \
     python manage.py collectstatic --noinput
 
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000
