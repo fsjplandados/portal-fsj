@@ -31,3 +31,20 @@ class Dashboard(models.Model):
     @property
     def is_new(self):
         return (timezone.now() - self.data_atualizacao) < timedelta(days=2)
+
+
+# dashboards/models.py
+
+class LogAcesso(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Deixamos como CharField (texto) caso você delete o dashboard, o log não some
+    dashboard_titulo = models.CharField(max_length=200)
+    data_acesso = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario} acessou {self.dashboard_titulo} em {self.data_acesso}"
+    
+class Meta:
+        verbose_name = "Log de Acesso"
+        verbose_name_plural = "Logs de Acessos"
+        ordering = ['-data_acesso'] # Mostra os mais recentes primeiro
