@@ -19,19 +19,23 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(' ')
 
 # --- APLICAÇÕES ---
 INSTALLED_APPS = [
-    'cloudinary_storage',
-    'cloudinary',
+    # Mantenha os apps padrões do Django no topo
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    
+    # O 'staticfiles' deve vir ANTES do Cloudinary neste caso
     'django.contrib.staticfiles',
+    
+    # Apps de Terceiros (Cloudinary)
+    'cloudinary_storage',
+    'cloudinary',
     
     # Seus Apps
     'dashboards',
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     
